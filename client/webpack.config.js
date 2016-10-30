@@ -5,6 +5,7 @@ module.exports = {
   devtool: 'eval-source-map',
   context: path.join(__dirname, 'src'),
   entry: [
+    'react-hot-loader/patch',
     'webpack-dev-server/client?http://localhost:8080',
     'webpack/hot/only-dev-server',
     './main.tsx'
@@ -13,7 +14,7 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js', '.jsx']
   },
   output: {
-    path: path.resolve(__dirname, '/dist'),
+    path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
     publicPath : '/'
   },
