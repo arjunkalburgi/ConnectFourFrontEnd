@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{% if title %}
+	<title>{{title}} - c275</title>
+	{% else %}
+	<title>Welcome to a c275 project</title>
+	{% endif %}
+
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$(endgame).hide()
+			restart()
+			if (!localStorage.getItem("difficulty")) {
+				localStorage.setItem("difficulty", 5); 
+			}
+		});
+
+		var cont = 1;
+
+		function play(col) {
+			/*
+			This function should basically reflect everything from test.py
+			It's wrapped around an if for cont so that once the game is 
+			over the user can't keep putting in pieces randomly.
+
+			Because the ajax calls run asyncronously, they need to be 
+			threaded so that they don't run if they're not supposed to. 
+			*/
+			
+			if (cont) {
+				// ajax request for the board 
+				// based on the users click selection
+				$.post('/user_play/',
+					{col: col, b: localStorage.getItem('board')},
+					function(json) {
+
+						// update the board with what's new
+						board = json.board;
+						update_board(board);
+						
+						// check if the player has won! 
+						$.post('/check_win/', 
+							{b: localStorage.getItem('board')}, 
+							function(json) {
+								player = json.player;
+								
+								// if the player did win,
+								if (player) {
+									// end game and refresh. 
+									cont = 0
+									end(player);
+
+								// if the player didn't win
+								} else {
+									// go get comps play board
+									$.post('/comp_play/',
+										{val: localStorage.getItem("difficulty"),b: localStorage.getItem('board')},
+										function(json) {
+											
+											// update the board with what's new
+											board = json.board; 
+											update_board(board)
+								
+											// check if the computer won.
+											check4win(); 
+										});
+								}
+							});
+					});
+			}
+		}
+		
+		function check4win() {
+			/*
+			This function is simply an ajax request 
+			for the server's check_win function. 
+			If someone did win, we turn off the ability
+			to put pieces in the board and run end()
+			*/
+			$.post('/check_win/', 
+				{b: localStorage.getItem('board')}, 
+				function(json) {
+					player = json.player;
+					if (player) {
+						// end game and refresh. 
+						cont = 0
+						end(player);
+					}
+				});
+		}
+
+		function update_board(board) {
+			/*
+			This function receives the board after an ajax from the server
+			Then updates all the spots to reflect what should be shown.
+			Also updates the board in localStorage.
+			*/
+			b = [[],[],[],[],[],[],[]];
+			for (r=0; r<7; r++) {
+				for (c=0; c<7; c++) {
+					if (board[r][c] == 2) {
+						document.getElementById(String(r)+String(c)).style.backgroundColor = "red";
+					}
+					if (board[r][c] == 1) {
+						document.getElementById(String(r)+String(c)).style.backgroundColor = "yellow";
+					}
+					if (board[r][c] == 0) {
+						document.getElementById(String(r)+String(c)).style.backgroundColor = "white";
+					}
+					b[r].push(board[r][c])
+				}
+			}
+			s = '([' + String(b[0]) + '],[' + String(b[1]) + '],[' + String(b[2]) + '],[' + String(b[3]) + '],[' + String(b[4]) + '],[' + String(b[5]) + '],[' + String(b[6]) + '])';
+			localStorage.setItem("board", s)
+		}
+
+		function end(player) {
+			/*
+			This function is for user-friendliness, 
+			Gives the user a button to play again and a nice 
+			message. The reason 'mess' is here is because ajax runs
+			asynchronously. So if the player wins, and the computer 
+			wins on the next turn, the message shouldn't be updated
+			to say that the computer won. 
+			*/
+
+			console.log("Congratulations, " + player + " won!");
+				
+			// show button to restart 
+			$(endgame).show()
+				
+			// message to users
+			if (player == 1) {
+				$(message).text("Sorry, you lost, would you like to try again?")
+			} else {
+				$(message).text("Nice job, want to play again?")
+			}
+			$(message).show()
+		}
+
+		function restart() {
+			/*
+			simple post request to tell the server and 
+			the client to clear the board.
+			*/
+
+			localStorage.setItem("board", '([0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0])'); 
+			
+			for (r=0; r<7; r++) {
+				for (c=0; c<7; c++) {
+					document.getElementById(String(r)+String(c)).style.backgroundColor = "white";
+				}
+			}
+
+			$(message).hide()
+			$(endgame).hide()
+			cont = 1
+		}
+
+		function change_difficulty() {
+			/* 
+			gets the value that the user submitted, 
+			and stored it in localStorage! 
+			*/
+
+			value = $('input[name=difficulty]:checked').val();
+			localStorage.setItem("difficulty",value)
+
+			// console.log("change_difficulty to " + String(value)); 
+		}
+	</script>
+</head>
+<body>
+	<!-- this is the html for the message board at the top of each screen -->
+	<div style="background-color: white; text-align: center">
+		<br/>
+		<div>Connect4 <br/><a href="/startup">Home</a> | <a href="/game">Game</a> | <a href="https://github.com/askalburgi/connectfour">More</a></div>
+		<hr>
+
+		<!-- This div is for messages, text is put here by functions -->
+		<div id="message"></div>
+
+		<!-- This div is for the restart button, it is hidden at all -->
+		<!-- times except when a game is over. -->
+		<div id="endgame">
+			<a href="javascript:restart()">Play Again.</a>
+		</div>
+	
+		<hr>
+		<br/>
+	</div>
+	{% block content %}{% endblock %}
+</body>
+</html>
