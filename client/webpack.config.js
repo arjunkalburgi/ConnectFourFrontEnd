@@ -1,24 +1,35 @@
+var path = require('path');
+var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
-  entry: {
-    main: './src/main.ts',
-    styles: './src/styles.scss'
-  },
+  devtool: 'eval-source-map',
+  context: path.join(__dirname, 'src'),
+  entry: [
+    'webpack-dev-server/client?http://localhost:8080',
+    'webpack/hot/only-dev-server',
+    './main.tsx'
+  ],
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx']
   },
   output: {
-    path: __dirname + '/dist',
-    filename: '[name].bundle.js'
+    path: path.resolve(__dirname, '/dist'),
+    filename: 'bundle.js',
+    publicPath : '/'
   },
-  devtool: 'source-map',
+  devServer: {
+    hot: true,
+    contentBase: '/dist',
+    publicPath: '/'
+  },
   module: {
     rules: [
       {
-        test: /\.ts$/,
-        loader: 'awesome-typescript-loader'
+        test: /\.tsx?$/,
+        loader: ['react-hot-loader/webpack', 'awesome-typescript-loader']
       },
       {
-        test: /\.ts$/,
+        test: /\.tsx?$/,
         enforce: 'pre',
         loader: 'tslint-loader'
       },
@@ -27,5 +38,10 @@ module.exports = {
         loaders: ['style-loader', 'css-loader', 'sass-loader']
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin(),
+    new HtmlWebpackPlugin()
+  ]
 };
