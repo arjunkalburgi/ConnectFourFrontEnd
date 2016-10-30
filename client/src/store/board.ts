@@ -2,7 +2,7 @@ import { Action } from 'redux';
 
 export interface BoardAction extends Action {
   type: string;
-  payload: {
+  payload?: {
     column: number,
     player: 'user' | 'computer'
   };
