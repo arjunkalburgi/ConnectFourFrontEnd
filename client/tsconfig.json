@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "declaration": false,
+    "lib": ["es6", "dom"],
+    "mapRoot": "./",
+    "module": "es6",
+    "moduleResolution": "node",
+    "outDir": "./dist/out-ts",
+    "sourceMap": true,
+    "target": "es5"
+  }
+}
