@@ -13,7 +13,6 @@ const render = () => {
     document.getElementById('root')
   );
 };
-console.log(ReactDOM);
 render();
 if (module.hot) {
   module.hot.accept('./components/App', render);
