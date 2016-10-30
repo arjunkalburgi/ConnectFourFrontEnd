@@ -8,11 +8,11 @@ export interface BoardAction extends Action {
   };
 };
 
-type Board = Array<Array<'user' | 'computer'>>;
+export type Board = Array<Array<'user' | 'computer'>>;
 const DEFAULT_BOARD = Array(7).fill([]);
 
-const MAKE_MOVE = 'MAKE_MOVE';
-const CLEAR_BOARD = 'CLEAR_BOARD';
+export const MAKE_MOVE = 'MAKE_MOVE';
+export const CLEAR_BOARD = 'CLEAR_BOARD';
 
 const makeMove = (state: Board, action: BoardAction) => {
   let newBoard = [
